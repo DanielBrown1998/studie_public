@@ -256,13 +256,12 @@ Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para ma
 
 ## 👥 Equipe
 
-- **Desenvolvedor Principal** - [Seu Nome]
+- **Desenvolvedor Principal** - Daniel Brown R. M. Dos Passos
 
 ## 📞 Contato
 
-- **Email**: seu.email@exemplo.com
-- **LinkedIn**: [Seu LinkedIn]
-- **GitHub**: [Seu GitHub]
+- **Email**: daniel_profissional1998@hotmail.com
+- **LinkedIn**: https://www.linkedin.com/in/daniel-brown-rodrigues-m-dos-passos
 
 ---
 
