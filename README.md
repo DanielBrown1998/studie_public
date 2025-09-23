@@ -10,7 +10,7 @@ Um aplicativo pensado para estudantes, com o objetivo de os ajudar nos seus estu
 
 | ![screenshot 1](screenshots/flutter_01.png) | ![screenshot 2](screenshots/flutter_02.png) | ![screenshot 3](screenshots/flutter_03.png) |
 |---|---|---|
-| ![screenshot 4](screenshots/flutter_04.png) | ![screenshot 5](screenshots/flutter_05.png) | ![screenshot 6](screenshots/flutter_06.png) |
+| ![screenshot 5](screenshots/flutter_05.png) | ![screenshot 6](screenshots/flutter_06.png) |
 
 ## Começando
 
