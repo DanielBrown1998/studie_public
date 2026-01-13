@@ -1,0 +1,2 @@
+Comando para gerar a documentação (requer Java e plantuml.jar):
+java -jar plantuml.jar documentation

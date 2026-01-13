@@ -1,0 +1,11 @@
+@startuml
+title State Diagram - Ask AI Assistant
+
+[*] --> Idle
+Idle --> WaitingForAnswer: askQuestion()
+WaitingForAnswer --> AnswerReceived: onAnswerReceived()
+WaitingForAnswer --> Error: onError()
+AnswerReceived --> Idle: newQuestion()
+Error --> Idle: acknowledgeError()
+
+@enduml

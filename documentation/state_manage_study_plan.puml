@@ -1,0 +1,13 @@
+@startuml
+title State Diagram - Manage Study Plan
+
+[*] --> NoStudyPlan
+NoStudyPlan --> CreatingStudyPlan: createStudyPlan()
+CreatingStudyPlan --> StudyPlanCreated: onCreationSuccess()
+CreatingStudyPlan --> Error: onCreationError()
+StudyPlanCreated --> ViewingStudyPlan: viewStudyPlan()
+ViewingStudyPlan --> StudyPlanCreated: closeView()
+StudyPlanCreated --> NoStudyPlan: deleteStudyPlan()
+Error --> NoStudyPlan: acknowledgeError()
+
+@enduml

@@ -1,0 +1,43 @@
+@startuml
+title Sequence Diagram - Manage Study Cronogram
+
+actor Student
+participant "Presentation Layer" as UI
+participant "Domain Layer" as Domain
+participant "Data Layer" as Data
+
+Student -> UI: Request to create study cronogram
+activate UI
+
+UI -> Domain: makeStudyCronogram(details)
+activate Domain
+
+Domain -> Data: saveStudyCronogram(cronogramData)
+activate Data
+Data --> Domain: saveConfirmation
+deactivate Data
+
+Domain --> UI: creationSuccess
+deactivate Domain
+
+UI --> Student: Display cronogram created
+deactivate UI
+
+Student -> UI: Request to view study cronogram
+activate UI
+
+UI -> Domain: getStudyCronogram()
+activate Domain
+
+Domain -> Data: getStudyCronogram()
+activate Data
+Data --> Domain: cronogram
+deactivate Data
+
+Domain --> UI: cronogram
+deactivate Domain
+
+UI --> Student: Display study cronogram
+deactivate UI
+
+@enduml

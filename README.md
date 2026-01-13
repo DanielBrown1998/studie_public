@@ -4,13 +4,50 @@ Um aplicativo pensado para estudantes, com o objetivo de os ajudar nos seus estu
 
 [English Version](README.md)
 
-![Logo](images/logo_android.png)
+
+## Documentação
+
+### Diagrama de Casos de Uso
+
+![Diagrama de Casos de Uso](documentation/use_case_diagram.png)
+
+### Diagramas de Sequência
+
+#### Gerenciar Plano de Estudo
+
+![Gerenciar Plano de Estudo](documentation/sequence_manage_study_plan.png)
+
+#### Gerenciar Cronograma de Estudo
+
+![Gerenciar Cronograma de Estudo](documentation/sequence_manage_study_cronogram.png)
+
+#### Perguntar ao Assistente de IA
+
+![Perguntar ao Assistente de IA](documentation/sequence_ask_ai_assistant.png)
+
+### Diagramas de Estado
+
+#### Gerenciar Plano de Estudo
+
+![Gerenciar Plano de Estudo](documentation/state_manage_study_plan.png)
+
+#### Gerenciar Cronograma de Estudo
+
+![Gerenciar Cronograma de Estudo](documentation/state_manage_study_cronogram.png)
+
+#### Perguntar ao Assistente de IA
+
+![Perguntar ao Assistente de IA](documentation/state_ask_ai_assistant.png)
+
 
 ## Screenshots
 
 | ![screenshot 1](screenshots/flutter_01.png) | ![screenshot 2](screenshots/flutter_02.png) | ![screenshot 3](screenshots/flutter_03.png) |
 |---|---|---|
-| ![screenshot 5](screenshots/flutter_05.png) | ![screenshot 6](screenshots/flutter_06.png) |
+| ![screenshot 4](screenshots/flutter_04.png) | ![screenshot 5](screenshots/flutter_05.png) | ![screenshot 6](screenshots/flutter_06.png) |
+| ![screenshot 7](screenshots/flutter_07.png) | ![screenshot 8](screenshots/flutter_08.png) | ![screenshot 9](screenshots/flutter_09.png) |
+| ![screenshot 10](screenshots/flutter_10.png) | ![screenshot 11](screenshots/flutter_11.png) | ![screenshot 12](screenshots/flutter_12.png) |
+
 
 ## Começando
 
@@ -33,8 +70,7 @@ exemplos, orientação sobre desenvolvimento móvel e uma referência completa d
 - **Temporizador**: um temporizador para o ajudar a concentrar-se nos seus estudos.
 - **Integração com Firebase**: utiliza o Firebase para serviços de back-end como IA, App Check e Crashlytics.
 - **Tema personalizado**: um tema único e bonito para o aplicativo.
-- **Gerenciamento de estado GetX**: um gerenciador de estado rápido, estável e fácil de usar.
-- **Banco de dados local**: usa o Drift para armazenar dados localmente.
+- **Banco de dados local**: usa o Sqflite para armazenar dados localmente.
 
 ## Arquitetura do Projeto
 
@@ -51,14 +87,9 @@ O projeto também é dividido em funcionalidades, onde cada funcionalidade possu
 ### Dependências
 
 - **cupertino_icons**: ícones de estilo iOS.
-- **drift**: uma biblioteca de persistência reativa para Flutter e Dart.
-- **drift_flutter**: utilitários específicos do Flutter para drift.
 - **path_provider**: um plug-in do Flutter para encontrar locais comumente usados ​​no sistema de arquivos.
 - **path**: uma biblioteca abrangente e multiplataforma de manipulação de caminhos para Dart.
-- **get**: um gerenciador de estado rápido, estável e fácil de usar.
-- **carousel_slider**: um widget de controle deslizante de carrossel.
 - **firebase_core**: o ponto de entrada para o SDK do Firebase.
-- **lottie**: uma biblioteca para analisar animações do Adobe After Effects exportadas como json.
 - **firebase_crashlytics**: um plug-in do Flutter para o Firebase Crashlytics.
 - **firebase_analytics**: um plug-in do Flutter para o Firebase Analytics.
 - **firebase_ai**: um plug-in do Flutter para o Firebase AI.
@@ -71,12 +102,4 @@ O projeto também é dividido em funcionalidades, onde cada funcionalidade possu
 - **flutter_test**: a estrutura de teste para Flutter.
 - **flutter_lints**: um conjunto de lints recomendados para incentivar boas práticas de codificação.
 - **build_runner**: um sistema de compilação para Dart.
-- **drift_dev**: o gerador de código para drift.
 - **mockito**: uma estrutura de simulação para Dart.
-- **flutter_launcher_icons**: uma ferramenta de linha de comando que simplifica a tarefa de atualizar o ícone do iniciador do seu aplicativo Flutter.
-
-## Como executar
-
-1. Clone o repositório.
-2. Execute `flutter pub get`.
-3. Execute `flutter run`.

@@ -1,0 +1,50 @@
+@startuml
+title Sequence Diagram - Manage Study Plan
+
+actor Student
+participant "Presentation Layer" as UI
+participant "Domain Layer" as Domain
+participant "Data Layer" as Data
+participant "AI Service" as AIService
+
+Student -> UI: Request to create study plan
+activate UI
+
+UI -> Domain: makeStudyPlan(subject)
+activate Domain
+
+Domain -> AIService: generateStudyPlanForSubject(subject)
+activate AIService
+AIService --> Domain: studyPlanData
+deactivate AIService
+
+Domain -> Data: saveStudyPlan(studyPlanData)
+activate Data
+Data --> Domain: saveConfirmation
+deactivate Data
+
+Domain --> UI: creationSuccess
+deactivate Domain
+
+UI --> Student: Display study plan created
+
+deactivate UI
+
+Student -> UI: Request to view study plan
+activate UI
+
+UI -> Domain: getStudyPlan()
+activate Domain
+
+Domain -> Data: getStudyPlan()
+activate Data
+Data --> Domain: studyPlan
+deactivate Data
+
+Domain --> UI: studyPlan
+deactivate Domain
+
+UI --> Student: Display study plan
+deactivate UI
+
+@enduml

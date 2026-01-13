@@ -1,0 +1,10 @@
+@startuml
+left to right direction
+actor Student
+
+rectangle "Studie App" {
+  Student -- (Manage Study Plan)
+  Student -- (Manage Study Cronogram)
+  Student -- (Ask AI Assistant)
+}
+@enduml

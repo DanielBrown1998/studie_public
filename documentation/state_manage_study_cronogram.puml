@@ -1,0 +1,13 @@
+@startuml
+title State Diagram - Manage Study Cronogram
+
+[*] --> NoCronogram
+NoCronogram --> CreatingCronogram: createCronogram()
+CreatingCronogram --> CronogramCreated: onCreationSuccess()
+CreatingCronogram --> Error: onCreationError()
+CronogramCreated --> ViewingCronogram: viewCronogram()
+ViewingCronogram --> CronogramCreated: closeView()
+CronogramCreated --> NoCronogram: deleteCronogram()
+Error --> NoCronogram: acknowledgeError()
+
+@enduml
