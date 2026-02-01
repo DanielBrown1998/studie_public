@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-  <strong>Um aplicativo pensado para estudantes, com o objetivo de os ajudar nos seus estudos.</strong>
+  <strong>Um aplicativo pensado para estudantes e desenvolvedores que desejam crescer profissionalmente e academicamente, plano de estudos gerado por I.A, consultas de conceitos contextualizado com as melhores referencias academicas.</strong>
 </p>
 
 ---
