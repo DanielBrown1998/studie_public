@@ -25,6 +25,14 @@
 
 ---
 
+## � Screenshots
+
+| ![screenshot 1](screenshots/flutter_01.png) | ![screenshot 2](screenshots/flutter_02.png) | ![screenshot 3](screenshots/flutter_03.png) |
+|---|---|---|
+| ![screenshot 4](screenshots/flutter_04.png) |
+
+---
+
 ## 📚 Documentação
 
 Para documentação completa, acesse: [documentation/README.md](documentation/README.md)
@@ -69,14 +77,6 @@ Para documentação completa, acesse: [documentation/README.md](documentation/RE
 ### 🎨 Design System
 
 Para informações sobre o sistema de design e componentes visuais, acesse: [DESIGN_SYSTEM.md](documentation/DESIGN_SYSTEM.md)
-
----
-
-## 📸 Screenshots
-
-| ![screenshot 1](screenshots/flutter_01.png) | ![screenshot 2](screenshots/flutter_02.png) | ![screenshot 3](screenshots/flutter_03.png) |
-|---|---|---|
-| ![screenshot 4](screenshots/flutter_04.png) |
 
 ---
 
