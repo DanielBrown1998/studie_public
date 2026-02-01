@@ -1,11 +1,99 @@
-@startuml
-title State Diagram - Ask AI Assistant
+@startuml state_ask_ai_assistant
+!theme cerulean-outline
 
-[*] --> Idle
-Idle --> WaitingForAnswer: askQuestion()
-WaitingForAnswer --> AnswerReceived: onAnswerReceived()
-WaitingForAnswer --> Error: onError()
-AnswerReceived --> Idle: newQuestion()
-Error --> Idle: acknowledgeError()
+skinparam state {
+    BackgroundColor White
+    BorderColor #2D3142
+    ArrowColor #4F5D75
+}
+
+title UC04 - Diagrama de Estados: Consultar Assistente de IA
+
+[*] --> Inicial
+
+state Inicial {
+    [*] --> AguardandoPergunta
+    AguardandoPergunta : Interface de chat pronta
+}
+
+state DigitandoPergunta {
+    [*] --> CampoTexto
+    CampoTexto : Usuário digita pergunta
+    CampoTexto --> ValidandoTexto : Clica enviar
+    
+    ValidandoTexto --> TextoVazio : Pergunta vazia
+    ValidandoTexto --> TextoValido : Pergunta válida
+    
+    state TextoVazio {
+        [*] --> ExibindoAlerta
+    }
+    
+    state TextoValido {
+        [*] --> ProntoParaEnviar
+    }
+}
+
+state ProcessandoPergunta {
+    [*] --> EnviandoParaIA
+    EnviandoParaIA : Requisição ao Gemini
+    
+    EnviandoParaIA --> AguardandoResposta
+    
+    state AguardandoResposta {
+        [*] --> Processando
+        Processando : Exibe indicador de loading
+    }
+    
+    AguardandoResposta --> RespostaRecebida : Sucesso
+    AguardandoResposta --> ErroConexao : Timeout
+    AguardandoResposta --> ErroIA : Erro da API
+}
+
+state RespostaRecebida {
+    [*] --> ExibindoResposta
+    ExibindoResposta : Mostra resposta na tela
+}
+
+state ErroConexao {
+    [*] --> ExibindoErroTimeout
+    ExibindoErroTimeout : "Tempo limite excedido"
+}
+
+state ErroIA {
+    [*] --> ExibindoErroAPI
+    ExibindoErroAPI : "Erro ao processar pergunta"
+}
+
+state HistoricoChat {
+    [*] --> ExibindoHistorico
+    ExibindoHistorico : Lista de perguntas/respostas
+}
+
+' Transições principais
+Inicial --> DigitandoPergunta : Foca no campo
+DigitandoPergunta --> ProcessandoPergunta : Pergunta válida
+ProcessandoPergunta --> RespostaRecebida : Sucesso
+RespostaRecebida --> DigitandoPergunta : Nova pergunta
+RespostaRecebida --> HistoricoChat : Ver histórico
+HistoricoChat --> DigitandoPergunta : Volta para chat
+
+' Transições de erro
+TextoVazio --> CampoTexto : Corrige
+ErroConexao --> DigitandoPergunta : Tentar novamente
+ErroIA --> DigitandoPergunta : Tentar novamente
+
+RespostaRecebida --> [*]
+
+note right of ProcessandoPergunta
+    MakeAQuestionToAiUsecase
+    - Envia para Gemini
+    - Retorna resposta texto
+end note
+
+note bottom of HistoricoChat
+    Histórico pode ser
+    mantido em memória
+    ou persistido
+end note
 
 @enduml

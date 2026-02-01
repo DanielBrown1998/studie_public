@@ -1,0 +1,117 @@
+@startuml state_generate_study_plan
+!theme cerulean-outline
+
+skinparam state {
+    BackgroundColor White
+    BorderColor #2D3142
+    ArrowColor #4F5D75
+}
+
+title UC02 - Diagrama de Estados: Gerar Plano de Estudos
+
+[*] --> Inicial
+
+state Inicial {
+    [*] --> AguardandoSelecao
+    AguardandoSelecao : Usuário deve selecionar disciplina
+}
+
+state DisciplinaSelecionada {
+    [*] --> VerificandoPlanoExistente
+    VerificandoPlanoExistente --> PlanoExistente : Plano encontrado
+    VerificandoPlanoExistente --> SemPlano : Sem plano
+    
+    state PlanoExistente {
+        [*] --> ExibindoMaterias
+        ExibindoMaterias : Lista de assuntos
+        ExibindoMaterias --> PerguntaRegeneracao : Solicita novo plano
+        
+        state PerguntaRegeneracao {
+            [*] --> AguardandoConfirmacao
+        }
+    }
+    
+    state SemPlano {
+        [*] --> ExibindoOpcaoGerar
+        ExibindoOpcaoGerar : Mostra botão para gerar
+    }
+}
+
+state GerandoPlano {
+    [*] --> PreparandoPrompt
+    PreparandoPrompt : Monta contexto da disciplina
+    
+    PreparandoPrompt --> EnviandoParaIA
+    
+    state EnviandoParaIA {
+        [*] --> AguardandoResposta
+        AguardandoResposta : Requisição ao Gemini
+    }
+    
+    EnviandoParaIA --> ProcessandoResposta : Resposta recebida
+    EnviandoParaIA --> ErroConexao : Timeout/Falha
+    
+    state ProcessandoResposta {
+        [*] --> ValidandoJSON
+        ValidandoJSON --> ParseandoMaterias : JSON válido
+        ValidandoJSON --> ErroValidacao : JSON inválido
+        
+        ParseandoMaterias --> SalvandoNoBanco
+    }
+}
+
+state SalvandoNoBanco {
+    [*] --> PersistindoMaterias
+    PersistindoMaterias : Salvando subjects
+    
+    PersistindoMaterias --> SucessoGeracao : Sucesso
+    PersistindoMaterias --> ErroPersistencia : Falha DB
+}
+
+state SucessoGeracao {
+    [*] --> ExibindoPlanoGerado
+    ExibindoPlanoGerado : Mostra lista de matérias
+}
+
+state ErroConexao {
+    [*] --> ExibindoErroConexao
+    ExibindoErroConexao : "Erro de conexão"
+}
+
+state ErroValidacao {
+    [*] --> ExibindoErroIA
+    ExibindoErroIA : "Resposta inválida da IA"
+}
+
+state ErroPersistencia {
+    [*] --> ExibindoErroSalvamento
+    ExibindoErroSalvamento : "Erro ao salvar"
+}
+
+' Transições
+Inicial --> DisciplinaSelecionada : Seleciona disciplina
+DisciplinaSelecionada --> GerandoPlano : Solicita geração
+PlanoExistente --> GerandoPlano : Confirma regeneração
+SemPlano --> GerandoPlano : Clica em gerar
+GerandoPlano --> SucessoGeracao : Sucesso total
+SucessoGeracao --> DisciplinaSelecionada : Volta para visualização
+ErroConexao --> DisciplinaSelecionada : Tentar novamente
+ErroValidacao --> GerandoPlano : Tentar novamente
+ErroPersistencia --> GerandoPlano : Tentar novamente
+
+DisciplinaSelecionada --> [*]
+
+note right of GerandoPlano
+    MakeStudyPlanUseCase
+    - Gera até 50 matérias
+    - Níveis 1-50
+    - Modelo Gemini 2.5 Pro
+end note
+
+note bottom of SalvandoNoBanco
+    SubjectsRepository
+    - insertSubject()
+    - Associa disciplineId
+end note
+
+@enduml

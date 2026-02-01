@@ -1,0 +1,165 @@
+@startuml sequence_timer
+!theme cerulean-outline
+
+skinparam sequence {
+    ArrowColor #4F5D75
+    ActorBorderColor #2D3142
+    LifeLineBorderColor #4F5D75
+    ParticipantBorderColor #2D3142
+    ParticipantBackgroundColor #BFC0C0
+}
+
+title UC05 - Diagrama de Sequencia: Utilizar Temporizador de Estudo
+
+actor Usuario as user
+participant "TimerScreen" as screen
+participant "TimerCubit" as cubit
+participant "NotificationService" as notification
+participant "StudieSessionRepo" as repo
+database "SQLite" as db
+
+== Configuração do Timer ==
+
+user -> screen : Acessa timer
+activate screen
+screen -> cubit : Carrega configurações
+activate cubit
+cubit --> screen : Estado inicial (duração padrão)
+deactivate cubit
+
+user -> screen : Define tempo (ex: 30min)
+screen -> cubit : setDuration(30)
+activate cubit
+cubit --> screen : TimerConfigured(30min)
+deactivate cubit
+
+== Iniciar Timer ==
+
+user -> screen : Clica "Iniciar"
+screen -> cubit : startTimer()
+activate cubit
+
+cubit -> cubit : Inicia countdown
+cubit --> screen : TimerRunning(remaining: 30:00)
+
+loop A cada segundo
+    cubit -> cubit : tick()
+    cubit --> screen : TimerRunning(remaining: 29:59...)
+    screen -> screen : Atualiza display
+end
+
+deactivate cubit
+
+== Pausa e Retomada ==
+
+user -> screen : Clica "Pausar"
+screen -> cubit : pauseTimer()
+activate cubit
+cubit -> cubit : Para countdown
+cubit --> screen : TimerPaused(remaining: 25:34)
+deactivate cubit
+
+user -> screen : Clica "Retomar"
+screen -> cubit : resumeTimer()
+activate cubit
+cubit -> cubit : Retoma countdown
+cubit --> screen : TimerRunning(remaining: 25:34)
+deactivate cubit
+
+== Timer Completo ==
+
+cubit -> cubit : tick()
+activate cubit
+note right : remaining == 0
+
+cubit -> notification : showCompletionNotification()
+activate notification
+notification -> notification : Toca som de alarme
+notification -> notification : Vibração
+notification --> cubit : Notificação enviada
+deactivate notification
+
+cubit --> screen : TimerCompleted(totalTime: 30min)
+deactivate cubit
+
+screen -> screen : Exibe animação de conclusão
+
+== Registro de Sessão ==
+
+screen -> cubit : recordSession()
+activate cubit
+
+cubit -> repo : createStudieSession(session)
+activate repo
+
+repo -> db : INSERT INTO studie_sessions
+activate db
+db --> repo : success
+deactivate db
+
+repo --> cubit : StudieSession criado
+deactivate repo
+
+cubit --> screen : SessionRecorded
+deactivate cubit
+
+screen -> screen : Exibe resumo da sessão
+screen --> user : "Parabéns! 30 minutos estudados"
+
+== Cancelamento (Fluxo Alternativo) ==
+
+user -> screen : Clica "Cancelar"
+screen -> screen : Exibe dialog de confirmação
+user -> screen : Confirma cancelamento
+
+screen -> cubit : cancelTimer()
+activate cubit
+cubit -> cubit : Reseta estado
+cubit --> screen : TimerInitial
+deactivate cubit
+
+deactivate screen
+
+== Modo Pomodoro (Variação) ==
+
+user -> screen : Seleciona "Modo Pomodoro"
+activate screen
+
+screen -> cubit : setMode(pomodoro)
+activate cubit
+cubit --> screen : PomodoroConfigured(work: 25min, break: 5min)
+deactivate cubit
+
+user -> screen : Inicia Pomodoro
+screen -> cubit : startPomodoro()
+activate cubit
+
+loop 25 minutos - Trabalho
+    cubit -> cubit : tick()
+    cubit --> screen : PomodoroWorking(remaining, cycle: 1)
+end
+
+cubit --> screen : PomodoroCycleComplete(type: work)
+
+cubit -> notification : showBreakNotification()
+activate notification
+notification --> cubit : ok
+deactivate notification
+
+loop 5 minutos - Pausa
+    cubit -> cubit : tick()
+    cubit --> screen : PomodoroBreak(remaining)
+end
+
+cubit --> screen : PomodoroCycleComplete(type: break)
+deactivate cubit
+
+note right of cubit
+    Após 4 ciclos:
+    Pausa longa de 15 minutos
+end note
+
+screen --> user : "Ciclo completo!"
+deactivate screen
+
+@enduml

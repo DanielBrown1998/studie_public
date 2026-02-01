@@ -1,10 +1,103 @@
-@startuml
-left to right direction
-actor Student
+@startuml use_case_diagram
+!theme cerulean-outline
 
-rectangle "Studie App" {
-  Student -- (Manage Study Plan)
-  Student -- (Manage Study Cronogram)
-  Student -- (Ask AI Assistant)
+skinparam actorStyle awesome
+skinparam packageStyle rectangle
+skinparam usecaseBackgroundColor White
+skinparam usecaseBorderColor #2D3142
+skinparam actorBackgroundColor #4F5D75
+
+left to right direction
+
+title Diagrama de Casos de Uso - Studie App
+
+actor "Estudante" as student #EF8354
+actor "Firebase AI\n(Gemini)" as ai #4F5D75
+actor "Banco de Dados\nLocal" as db #4F5D75
+
+rectangle "Sistema Studie" {
+    
+    package "Gerenciamento de Disciplinas" {
+        usecase "UC01: Gerenciar\nDisciplinas" as UC01 #BFC0C0
+        usecase "Adicionar\nDisciplina" as UC01a
+        usecase "Remover\nDisciplina" as UC01b
+        usecase "Visualizar\nDisciplinas" as UC01c
+    }
+    
+    package "Plano de Estudos" {
+        usecase "UC02: Gerar Plano\nde Estudos" as UC02 #BFC0C0
+        usecase "Visualizar\nMatérias" as UC02a
+        usecase "Marcar Matéria\ncomo Concluída" as UC02b
+    }
+    
+    package "Cronograma" {
+        usecase "UC03: Gerenciar\nCronograma" as UC03 #BFC0C0
+        usecase "Definir Dias\nDisponíveis" as UC03a
+        usecase "Definir\nHorários" as UC03b
+        usecase "Visualizar\nCronograma" as UC03c
+    }
+    
+    package "Assistente IA" {
+        usecase "UC04: Consultar\nAssistente de IA" as UC04 #BFC0C0
+    }
+    
+    package "Temporizador" {
+        usecase "UC05: Utilizar\nTemporizador" as UC05 #BFC0C0
+        usecase "Pausar/Retomar\nTimer" as UC05a
+    }
+    
+    package "Trilha de Aprendizado" {
+        usecase "UC06: Visualizar\nTrilha" as UC06 #BFC0C0
+        usecase "Acompanhar\nProgresso" as UC06a
+    }
 }
+
+' Relacionamentos do Estudante
+student --> UC01
+student --> UC02
+student --> UC03
+student --> UC04
+student --> UC05
+student --> UC06
+
+' Relacionamentos Include
+UC01 ..> UC01a : <<include>>
+UC01 ..> UC01b : <<include>>
+UC01 ..> UC01c : <<include>>
+
+UC02 ..> UC02a : <<include>>
+UC02 ..> UC02b : <<include>>
+
+UC03 ..> UC03a : <<include>>
+UC03 ..> UC03b : <<include>>
+UC03 ..> UC03c : <<include>>
+
+UC05 ..> UC05a : <<extend>>
+
+UC06 ..> UC06a : <<include>>
+
+' Relacionamentos com Sistemas Externos
+UC01 --> db
+UC02 --> ai
+UC02 --> db
+UC03 --> ai
+UC03 --> db
+UC04 --> ai
+UC06 --> db
+
+' Dependências entre casos de uso
+UC02 ..> UC01 : <<precondition>>\ndisciplina\ncadastrada
+UC03 ..> UC01 : <<precondition>>\ndisciplina\ncadastrada
+UC06 ..> UC02 : <<precondition>>\nplano\ngerado
+
+note right of ai
+  Utiliza modelo Gemini 2.5 Pro
+  para geração de conteúdo
+end note
+
+note right of db
+  SQLite local com Drift ORM
+  para persistência de dados
+end note
+
 @enduml

@@ -2,54 +2,77 @@
 
 Um aplicativo pensado para estudantes, com o objetivo de os ajudar nos seus estudos.
 
-[English Version](README.md)
+## 🛠️ Tecnologias
 
+<p align="center">
+  <img src="icon/flutter.png" alt="Flutter" width="50" height="50" title="Flutter"/>
+  <img src="icon/dart.png" alt="Dart" width="50" height="50" title="Dart"/>
+  <img src="icon/firebase.png" alt="Firebase" width="50" height="50" title="Firebase"/>
+  <img src="icon/gemini.png" alt="Gemini AI" width="50" height="50" title="Gemini AI"/>
+  <img src="icon/sqlite.png" alt="SQLite" width="50" height="50" title="SQLite"/>
+  <img src="icon/figma.png" alt="Figma" width="50" height="50" title="Figma"/>
+  <img src="icon/git.png" alt="Git" width="50" height="50" title="Git"/>
+  <img src="icon/github_actions.png" alt="GitHub Actions" width="50" height="50" title="GitHub Actions"/>
+</p>
 
-## Documentação
+---
 
-### Diagrama de Casos de Uso
+## 📚 Documentação
+
+Para documentação completa, acesse: [documentation/README.md](documentation/README.md)
+
+### 📋 Resumo dos Casos de Uso
+
+| ID | Nome | Descrição |
+|----|------|-----------|
+| UC01 | Gerenciar Disciplinas | CRUD de disciplinas para estudo |
+| UC02 | Gerar Plano de Estudos | IA gera plano baseado nas disciplinas |
+| UC03 | Gerenciar Cronograma | IA cria cronograma de horários |
+| UC04 | Consultar Assistente IA | Chat com assistente para dúvidas |
+| UC05 | Utilizar Temporizador | Timer para sessões de estudo |
+| UC06 | Visualizar Trilha | Acompanhar progresso dos estudos |
+
+### 📊 Diagrama de Casos de Uso
 
 ![Diagrama de Casos de Uso](documentation/use_case_diagram.png)
 
-### Diagramas de Sequência
+### 📐 Diagramas de Sequência
 
-#### Gerenciar Plano de Estudo
+| Caso de Uso | Diagrama |
+|-------------|----------|
+| UC01 - Gerenciar Disciplinas | ![Gerenciar Disciplinas](documentation/sequence_manage_disciplines.png) |
+| UC02 - Gerar Plano de Estudos | ![Gerar Plano de Estudos](documentation/sequence_generate_study_plan.png) |
+| UC03 - Gerenciar Cronograma | ![Gerenciar Cronograma](documentation/sequence_manage_study_cronogram.png) |
+| UC04 - Consultar Assistente IA | ![Consultar Assistente IA](documentation/sequence_ask_ai_assistant.png) |
+| UC05 - Utilizar Temporizador | ![Utilizar Temporizador](documentation/sequence_timer.png) |
+| UC06 - Visualizar Trilha | ![Visualizar Trilha](documentation/sequence_learning_trail.png) |
 
-![Gerenciar Plano de Estudo](documentation/sequence_manage_study_plan.png)
+### 🔄 Diagramas de Estado
 
-#### Gerenciar Cronograma de Estudo
+| Caso de Uso | Diagrama |
+|-------------|----------|
+| UC01 - Gerenciar Disciplinas | ![Gerenciar Disciplinas](documentation/state_manage_disciplines.png) |
+| UC02 - Gerar Plano de Estudos | ![Gerar Plano de Estudos](documentation/state_generate_study_plan.png) |
+| UC03 - Gerenciar Cronograma | ![Gerenciar Cronograma](documentation/state_manage_study_cronogram.png) |
+| UC04 - Consultar Assistente IA | ![Consultar Assistente IA](documentation/state_ask_ai_assistant.png) |
+| UC05 - Utilizar Temporizador | ![Utilizar Temporizador](documentation/state_timer.png) |
+| UC06 - Visualizar Trilha | ![Visualizar Trilha](documentation/state_learning_trail.png) |
 
-![Gerenciar Cronograma de Estudo](documentation/sequence_manage_study_cronogram.png)
+### 🎨 Design System
 
-#### Perguntar ao Assistente de IA
+Para informações sobre o sistema de design e componentes visuais, acesse: [DESIGN_SYSTEM.md](documentation/DESIGN_SYSTEM.md)
 
-![Perguntar ao Assistente de IA](documentation/sequence_ask_ai_assistant.png)
+---
 
-### Diagramas de Estado
-
-#### Gerenciar Plano de Estudo
-
-![Gerenciar Plano de Estudo](documentation/state_manage_study_plan.png)
-
-#### Gerenciar Cronograma de Estudo
-
-![Gerenciar Cronograma de Estudo](documentation/state_manage_study_cronogram.png)
-
-#### Perguntar ao Assistente de IA
-
-![Perguntar ao Assistente de IA](documentation/state_ask_ai_assistant.png)
-
-
-## Screenshots
+## 📸 Screenshots
 
 | ![screenshot 1](screenshots/flutter_01.png) | ![screenshot 2](screenshots/flutter_02.png) | ![screenshot 3](screenshots/flutter_03.png) |
 |---|---|---|
-| ![screenshot 4](screenshots/flutter_04.png) | ![screenshot 5](screenshots/flutter_05.png) | ![screenshot 6](screenshots/flutter_06.png) |
-| ![screenshot 7](screenshots/flutter_07.png) | ![screenshot 8](screenshots/flutter_08.png) | ![screenshot 9](screenshots/flutter_09.png) |
-| ![screenshot 10](screenshots/flutter_10.png) | ![screenshot 11](screenshots/flutter_11.png) | ![screenshot 12](screenshots/flutter_12.png) |
+| ![screenshot 4](screenshots/flutter_04.png) |
 
+---
 
-## Começando
+## 🚀 Começando
 
 Este projeto é um ponto de partida para uma aplicação Flutter.
 
@@ -62,7 +85,9 @@ Para obter ajuda para começar a usar o desenvolvimento do Flutter, consulte a
 [documentação online](https://docs.flutter.dev/), que oferece tutoriais,
 exemplos, orientação sobre desenvolvimento móvel e uma referência completa de API.
 
-## Funcionalidades
+---
+
+## ✨ Funcionalidades
 
 - **Criação e gerenciamento de tarefas**: permite que os usuários criem e gerenciem suas tarefas.
 - **Geração de plano de estudo com tecnologia de IA**: crie planos de estudo personalizados com base em suas necessidades.
@@ -72,7 +97,9 @@ exemplos, orientação sobre desenvolvimento móvel e uma referência completa d
 - **Tema personalizado**: um tema único e bonito para o aplicativo.
 - **Banco de dados local**: usa o Sqflite para armazenar dados localmente.
 
-## Arquitetura do Projeto
+---
+
+## 🏗️ Arquitetura do Projeto
 
 O projeto segue um padrão de Arquitetura Limpa, separando o código em três camadas principais:
 
@@ -82,9 +109,11 @@ O projeto segue um padrão de Arquitetura Limpa, separando o código em três ca
 
 O projeto também é dividido em funcionalidades, onde cada funcionalidade possui suas próprias camadas de dados, domínio e apresentador.
 
-## Detalhes técnicos
+---
 
-### Dependências
+## ⚙️ Detalhes Técnicos
+
+### 📦 Dependências
 
 - **cupertino_icons**: ícones de estilo iOS.
 - **path_provider**: um plug-in do Flutter para encontrar locais comumente usados ​​no sistema de arquivos.
@@ -97,7 +126,7 @@ O projeto também é dividido em funcionalidades, onde cada funcionalidade possu
 - **connectivity_plus**: um plug-in do Flutter para descobrir a conectividade de rede.
 - **flutter_ai_toolkit**: um kit de ferramentas para criar aplicativos Flutter com tecnologia de IA.
 
-### Dependências de desenvolvimento
+### 🧪 Dependências de Desenvolvimento
 
 - **flutter_test**: a estrutura de teste para Flutter.
 - **flutter_lints**: um conjunto de lints recomendados para incentivar boas práticas de codificação.

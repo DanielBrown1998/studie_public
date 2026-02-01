@@ -1,26 +1,166 @@
-@startuml
-title Sequence Diagram - Ask AI Assistant
+@startuml sequence_ask_ai_assistant
+!theme cerulean-outline
 
-actor Student
-participant "Presentation Layer" as UI
-participant "Domain Layer" as Domain
-participant "AI Service" as AIService
+skinparam sequence {
+    ArrowColor #4F5D75
+    ActorBorderColor #2D3142
+    LifeLineBorderColor #4F5D75
+    ParticipantBorderColor #2D3142
+    ParticipantBackgroundColor White
+}
 
-Student -> UI: Asks a question
-activate UI
+title UC04 - Diagrama de Sequência: Consultar Assistente de IA
 
-UI -> Domain: makeAQuestionToAI(question)
-activate Domain
+actor Estudante as E
+participant "ChatPage" as CP
+participant "ChatCubit" as CC
+participant "MakeAQuestionToAiUsecase" as UC
+participant "AiRepository" as AIR
+participant "Firebase AI\n(Gemini)" as AI
 
-Domain -> AIService: ask(question)
-activate AIService
-AIService --> Domain: answer
-deactivate AIService
+== Fazer Pergunta ao Assistente ==
 
-Domain --> UI: answer
-deactivate Domain
+E -> CP: Acessa assistente de IA
+activate CP
 
-UI --> Student: Display answer
-deactivate UI
+CP --> E: Exibe interface de chat
+
+E -> CP: Digita pergunta\n"Como funciona POO em Python?"
+
+E -> CP: Clica em enviar
+CP -> CP: Valida texto não vazio
+
+CP -> CC: askQuestion(question)
+activate CC
+
+CC -> CC: emit(ChatLoading)
+CC --> CP: ChatLoading
+CP --> E: Exibe indicador de loading
+
+CC -> UC: call(question)
+activate UC
+
+== Enviar para Firebase AI ==
+
+UC -> AIR: askQuestion([Content.text(question)])
+activate AIR
+
+AIR -> AI: generateContent(prompt)
+activate AI
+
+note over AI
+    Modelo: Gemini 2.5 Pro
+    Processa a pergunta e
+    gera resposta contextualizada
+end note
+
+AI --> AIR: Response JSON
+deactivate AI
+
+AIR -> AIR: Extrair texto da resposta
+note right of AIR
+    response[response.keys.first]
+end note
+
+AIR --> UC: String (resposta)
+deactivate AIR
+
+UC --> CC: String (resposta)
+deactivate UC
+
+== Exibir Resposta ==
+
+CC -> CC: Adiciona ao histórico
+CC -> CC: emit(ChatSuccess)
+CC --> CP: ChatSuccess(response)
+deactivate CC
+
+CP -> CP: Atualiza lista de mensagens
+CP --> E: Exibe resposta da IA
+deactivate CP
+
+== Nova Pergunta ==
+
+E -> CP: Digita nova pergunta
+activate CP
+
+E -> CP: Clica em enviar
+CP -> CC: askQuestion(newQuestion)
+activate CC
+
+note over CC
+    O fluxo se repete
+    para cada nova pergunta
+end note
+
+CC --> CP: ...
+deactivate CC
+deactivate CP
+
+== Tratamento de Erro - Timeout ==
+
+E -> CP: Envia pergunta
+activate CP
+
+CP -> CC: askQuestion(question)
+activate CC
+
+CC -> UC: call(question)
+activate UC
+
+UC -> AIR: askQuestion([Content.text(question)])
+activate AIR
+
+AIR -> AI: generateContent(prompt)
+activate AI
+
+AI --> AIR: TimeoutException
+deactivate AI
+
+AIR --> UC: throw TimeoutException
+deactivate AIR
+
+UC --> CC: throw AIException
+deactivate UC
+
+CC -> CC: emit(ChatFailure)
+CC --> CP: ChatFailure(error)
+deactivate CC
+
+CP --> E: "Tempo limite excedido.\nTente novamente."
+deactivate CP
+
+== Tratamento de Erro - API ==
+
+E -> CP: Envia pergunta
+activate CP
+
+CP -> CC: askQuestion(question)
+activate CC
+
+CC -> UC: call(question)
+activate UC
+
+UC -> AIR: askQuestion([Content.text(question)])
+activate AIR
+
+AIR -> AI: generateContent(prompt)
+activate AI
+
+AI --> AIR: APIError (quota, invalid request, etc)
+deactivate AI
+
+AIR --> UC: throw APIException
+deactivate AIR
+
+UC --> CC: throw AIException
+deactivate UC
+
+CC -> CC: emit(ChatFailure)
+CC --> CP: ChatFailure(error)
+deactivate CC
+
+CP --> E: "Erro ao processar pergunta.\nTente novamente."
+deactivate CP
 
 @enduml

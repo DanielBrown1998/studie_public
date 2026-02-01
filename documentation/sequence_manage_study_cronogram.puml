@@ -1,43 +1,220 @@
-@startuml
-title Sequence Diagram - Manage Study Cronogram
+@startuml sequence_manage_study_cronogram
+!theme cerulean-outline
 
-actor Student
-participant "Presentation Layer" as UI
-participant "Domain Layer" as Domain
-participant "Data Layer" as Data
+skinparam sequence {
+    ArrowColor #4F5D75
+    ActorBorderColor #2D3142
+    LifeLineBorderColor #4F5D75
+    ParticipantBorderColor #2D3142
+    ParticipantBackgroundColor White
+}
 
-Student -> UI: Request to create study cronogram
-activate UI
+title UC03 - Diagrama de Sequência: Gerenciar Cronograma de Estudos
 
-UI -> Domain: makeStudyCronogram(details)
-activate Domain
+actor Estudante as E
+participant "CronogramaPage" as CP
+participant "CronogramaCubit" as CC
+participant "MakeStudyCronogramUseCase" as UC
+participant "DisciplineRepository" as DR
+participant "AiRepository" as AIR
+participant "Firebase AI\n(Gemini)" as AI
+participant "StudieSessionRepository" as SSR
+database "SQLite\n(Drift)" as DB
 
-Domain -> Data: saveStudyCronogram(cronogramData)
-activate Data
-Data --> Domain: saveConfirmation
-deactivate Data
+== Configurar Cronograma ==
 
-Domain --> UI: creationSuccess
-deactivate Domain
+E -> CP: Acessa funcionalidade
+activate CP
 
-UI --> Student: Display cronogram created
-deactivate UI
+CP --> E: Exibe configuração
+E -> CP: Seleciona dias disponíveis\n[Segunda, Quarta, Sexta]
 
-Student -> UI: Request to view study cronogram
-activate UI
+E -> CP: Define horários\nInício: 19:00, Fim: 21:00
 
-UI -> Domain: getStudyCronogram()
-activate Domain
+E -> CP: Confirma configuração
+CP -> CC: generateCronogram(days, times)
+activate CC
 
-Domain -> Data: getStudyCronogram()
-activate Data
-Data --> Domain: cronogram
-deactivate Data
+CC -> CC: emit(Loading)
 
-Domain --> UI: cronogram
-deactivate Domain
+== Verificar Disciplinas ==
 
-UI --> Student: Display study cronogram
-deactivate UI
+CC -> UC: call(days, timeStudy)
+activate UC
+
+UC -> DR: getAllDisciplines()
+activate DR
+
+DR -> DB: SELECT FROM disciplines
+activate DB
+DB --> DR: List<Discipline>
+deactivate DB
+
+DR --> UC: List<Discipline>
+deactivate DR
+
+alt Sem disciplinas cadastradas
+    UC --> CC: throw NoDisciplinesException
+    CC -> CC: emit(Failure)
+    CC --> CP: CronogramaFailure
+    CP --> E: "Cadastre disciplinas primeiro"
+else Com disciplinas
+    
+    == Montar Prompt para IA ==
+    
+    UC -> UC: formatDaysToString(days)
+    note right of UC
+        "Segunda, Quarta, Sexta"
+    end note
+    
+    UC -> UC: Criar Schema JSON
+    note right of UC
+        Schema StudieSession:
+        - timeStart: "HH:MM"
+        - timeEnd: "HH:MM"
+        - disciplineId: enum[disciplinas]
+        
+        Schema DayPlan:
+        - day: enum[dias selecionados]
+        - sessions: List<StudieSession>
+    end note
+    
+    UC -> UC: Montar prompt
+    note right of UC
+        "Distribua as disciplinas
+        [Python, Flutter, Java]
+        nos dias [Segunda, Quarta, Sexta]
+        entre 19:00 e 21:00"
+    end note
+    
+    == Chamar Firebase AI ==
+    
+    UC -> AIR: generateWithSchema(schema, prompt)
+    activate AIR
+    
+    AIR -> AI: generateContent(prompt)
+    activate AI
+    
+    note over AI
+        IA distribui disciplinas
+        de forma equilibrada
+        nos horários disponíveis
+    end note
+    
+    AI --> AIR: Response JSON
+    deactivate AI
+    
+    AIR --> UC: Map<String, dynamic>
+    deactivate AIR
+    
+    == Processar Resposta ==
+    
+    UC -> UC: Parsear JSON para StudieSessions
+    
+    loop Para cada dia no plano
+        loop Para cada sessão do dia
+            UC -> UC: Criar StudieSession
+            note right of UC
+                StudieSession(
+                    disciplineId: getDisciplineId(name),
+                    dayOfWeek: day,
+                    timeStart: session.timeStart,
+                    timeEnd: session.timeEnd
+                )
+            end note
+        end
+    end
+    
+    == Persistir no Banco ==
+    
+    UC -> SSR: deleteAllSessions()
+    activate SSR
+    SSR -> DB: DELETE FROM studie_sessions
+    SSR --> UC: void
+    deactivate SSR
+    
+    loop Para cada StudieSession
+        UC -> SSR: insertSession(session)
+        activate SSR
+        
+        SSR -> DB: INSERT INTO studie_sessions
+        activate DB
+        DB --> SSR: id
+        deactivate DB
+        
+        SSR --> UC: StudieSession
+        deactivate SSR
+    end
+    
+    UC --> CC: List<StudieSession>
+    deactivate UC
+    
+    CC -> CC: emit(Success)
+    CC --> CP: CronogramaSuccess
+    deactivate CC
+    
+    CP --> E: Exibe cronograma gerado
+    deactivate CP
+end
+
+== Visualizar Cronograma Existente ==
+
+E -> CP: Acessa cronograma
+activate CP
+
+CP -> CC: getCronogram()
+activate CC
+
+CC -> SSR: getAllSessions()
+activate SSR
+
+SSR -> DB: SELECT FROM studie_sessions
+activate DB
+DB --> SSR: List<StudieSession>
+deactivate DB
+
+SSR --> CC: List<StudieSession>
+deactivate SSR
+
+CC -> CC: emit(Success)
+CC --> CP: CronogramaState
+deactivate CC
+
+CP -> CP: Agrupa por dia da semana
+CP --> E: Exibe agenda semanal
+deactivate CP
+
+== Tratamento de Erro ==
+
+E -> CP: Confirma configuração
+activate CP
+
+CP -> CC: generateCronogram(days, times)
+activate CC
+
+CC -> UC: call(days, timeStudy)
+activate UC
+
+UC -> AIR: generateWithSchema(schema, prompt)
+activate AIR
+
+AIR -> AI: generateContent(prompt)
+activate AI
+
+AI --> AIR: NetworkError/Timeout
+deactivate AI
+
+AIR --> UC: throw AIException
+deactivate AIR
+
+UC --> CC: throw CronogramGenerationException
+deactivate UC
+
+CC -> CC: emit(Failure)
+CC --> CP: CronogramaFailure
+deactivate CC
+
+CP --> E: "Erro ao gerar cronograma.\nVerifique sua conexão."
+deactivate CP
 
 @enduml

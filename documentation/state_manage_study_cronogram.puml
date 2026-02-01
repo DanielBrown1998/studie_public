@@ -1,13 +1,129 @@
-@startuml
-title State Diagram - Manage Study Cronogram
+@startuml state_manage_study_cronogram
+!theme cerulean-outline
 
-[*] --> NoCronogram
-NoCronogram --> CreatingCronogram: createCronogram()
-CreatingCronogram --> CronogramCreated: onCreationSuccess()
-CreatingCronogram --> Error: onCreationError()
-CronogramCreated --> ViewingCronogram: viewCronogram()
-ViewingCronogram --> CronogramCreated: closeView()
-CronogramCreated --> NoCronogram: deleteCronogram()
-Error --> NoCronogram: acknowledgeError()
+skinparam state {
+    BackgroundColor White
+    BorderColor #2D3142
+    ArrowColor #4F5D75
+}
+
+title UC03 - Diagrama de Estados: Gerenciar Cronograma de Estudos
+
+[*] --> Inicial
+
+state Inicial {
+    [*] --> VerificandoCronograma
+    VerificandoCronograma --> CronogramaExistente : Cronograma encontrado
+    VerificandoCronograma --> SemCronograma : Sem cronograma
+}
+
+state SemCronograma {
+    [*] --> ExibindoConfiguracao
+    ExibindoConfiguracao : Mostra opções de configuração
+}
+
+state CronogramaExistente {
+    [*] --> ExibindoCronograma
+    ExibindoCronograma : Mostra agenda semanal
+    
+    ExibindoCronograma --> EditandoCronograma : Clica em editar
+}
+
+state ConfigurandoDias {
+    [*] --> SelecionandoDias
+    SelecionandoDias : Usuário marca dias disponíveis
+    
+    SelecionandoDias --> ValidandoSelecao
+    ValidandoSelecao --> DiasValidos : Pelo menos 1 dia
+    ValidandoSelecao --> DiasInvalidos : Nenhum dia
+    
+    state DiasInvalidos {
+        [*] --> ExibindoErroSelecao
+    }
+    
+    state DiasValidos {
+        [*] --> ProntoParaHorarios
+    }
+}
+
+state ConfigurandoHorarios {
+    [*] --> DefinindoHorarios
+    DefinindoHorarios : Define horário início/fim por dia
+    
+    DefinindoHorarios --> ValidandoHorarios
+    ValidandoHorarios --> HorariosValidos : Início < Fim
+    ValidandoHorarios --> HorariosInvalidos : Início >= Fim
+    
+    state HorariosInvalidos {
+        [*] --> ExibindoErroHorario
+    }
+    
+    state HorariosValidos {
+        [*] --> ProntoParaGerar
+    }
+}
+
+state GerandoCronograma {
+    [*] --> VerificandoDisciplinas
+    VerificandoDisciplinas --> SemDisciplinas : Nenhuma disciplina
+    VerificandoDisciplinas --> ComDisciplinas : Disciplinas encontradas
+    
+    state SemDisciplinas {
+        [*] --> ExibindoErroSemDisciplinas
+    }
+    
+    state ComDisciplinas {
+        [*] --> MontandoPrompt
+        MontandoPrompt --> EnviandoParaIA
+        
+        state EnviandoParaIA {
+            [*] --> AguardandoIA
+        }
+        
+        EnviandoParaIA --> ProcessandoResposta : Resposta OK
+        EnviandoParaIA --> ErroIA : Falha
+    }
+    
+    ProcessandoResposta --> SalvandoSessoes
+}
+
+state SalvandoSessoes {
+    [*] --> PersistindoNoBanco
+    PersistindoNoBanco --> SucessoGeracao : OK
+    PersistindoNoBanco --> ErroBanco : Falha
+}
+
+state SucessoGeracao {
+    [*] --> ExibindoCronogramaGerado
+}
+
+state EditandoCronograma {
+    [*] --> ModificandoSessao
+    ModificandoSessao : Permite editar sessão
+}
+
+' Transições principais
+SemCronograma --> ConfigurandoDias : Inicia configuração
+ConfigurandoDias --> ConfigurandoHorarios : Dias válidos
+ConfigurandoHorarios --> GerandoCronograma : Horários válidos
+GerandoCronograma --> SucessoGeracao : Sucesso
+SucessoGeracao --> CronogramaExistente : Visualizar
+CronogramaExistente --> ConfigurandoDias : Regenerar
+EditandoCronograma --> CronogramaExistente : Salva edição
+
+' Transições de erro
+DiasInvalidos --> ConfigurandoDias : Corrige
+HorariosInvalidos --> ConfigurandoHorarios : Corrige
+SemDisciplinas --> [*] : Redireciona para UC01
+ErroIA --> GerandoCronograma : Tentar novamente
+ErroBanco --> GerandoCronograma : Tentar novamente
+
+CronogramaExistente --> [*]
+
+note right of GerandoCronograma
+    MakeStudyCronogramUseCase
+    - Distribui disciplinas
+    - Usa Gemini 2.5 Pro
+end note
 
 @enduml

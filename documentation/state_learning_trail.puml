@@ -1,0 +1,157 @@
+@startuml state_learning_trail
+!theme cerulean-outline
+
+skinparam state {
+    BackgroundColor White
+    BorderColor #2D3142
+    ArrowColor #4F5D75
+}
+
+title UC06 - Diagrama de Estados: Visualizar Trilha de Aprendizado
+
+[*] --> Inicial
+
+state Inicial {
+    [*] --> VerificandoDados
+    VerificandoDados : Verifica se há plano ativo
+}
+
+state SemPlano {
+    [*] --> ExibindoMensagem
+    ExibindoMensagem : "Crie um plano de estudos primeiro"
+    
+    ExibindoMensagem --> RedirecionandoCriacao
+    
+    state RedirecionandoCriacao {
+        [*] --> AguardandoAcao
+    }
+}
+
+state CarregandoTrilha {
+    [*] --> BuscandoDisciplinas
+    BuscandoDisciplinas : Carrega disciplinas do banco
+    
+    BuscandoDisciplinas --> BuscandoAssuntos
+    
+    state BuscandoAssuntos {
+        [*] --> CarregandoProgresso
+        CarregandoProgresso : Carrega status de cada assunto
+    }
+    
+    BuscandoAssuntos --> CalculandoEstatisticas
+    
+    state CalculandoEstatisticas {
+        [*] --> ProcessandoProgresso
+        ProcessandoProgresso : % conclusão por disciplina
+    }
+}
+
+state ExibindoTrilha {
+    [*] --> MostrandoVisaoGeral
+    
+    state MostrandoVisaoGeral {
+        [*] --> ProgressoGeral
+        ProgressoGeral : % total do plano
+        ProgressoGeral --> ListaDisciplinas
+        ListaDisciplinas : Cards com progresso individual
+    }
+    
+    MostrandoVisaoGeral --> VisualizandoDisciplina : Seleciona disciplina
+    
+    state VisualizandoDisciplina {
+        [*] --> ExibindoAssuntos
+        ExibindoAssuntos : Lista de tópicos
+        
+        ExibindoAssuntos --> DetalhesAssunto : Seleciona assunto
+        
+        state DetalhesAssunto {
+            [*] --> MostrandoStatus
+            MostrandoStatus : Concluído / Pendente
+        }
+    }
+    
+    VisualizandoDisciplina --> MostrandoVisaoGeral : Volta
+}
+
+state MarcandoConclusao {
+    [*] --> AtualizandoStatus
+    AtualizandoStatus : Marca assunto como concluído
+    
+    AtualizandoStatus --> SalvandoBanco
+    
+    state SalvandoBanco {
+        [*] --> PersistindoDados
+    }
+    
+    SalvandoBanco --> RecalculandoProgresso
+    
+    state RecalculandoProgresso {
+        [*] --> AtualizandoEstatisticas
+    }
+}
+
+state ExibindoConquista {
+    [*] --> VerificandoMilestone
+    
+    state VerificandoMilestone {
+        [*] --> CheckandoCondicao
+    }
+    
+    VerificandoMilestone --> MostrandoAnimacao : Milestone atingido
+    VerificandoMilestone --> RetornandoTrilha : Sem milestone
+    
+    state MostrandoAnimacao {
+        [*] --> ExibindoCelebracao
+        ExibindoCelebracao : Animação de conquista
+    }
+}
+
+state DisciplinaConcluida {
+    [*] --> CelebrandoFinalizacao
+    CelebrandoFinalizacao : 100% da disciplina
+    
+    CelebrandoFinalizacao --> SugerindoProxima
+    
+    state SugerindoProxima {
+        [*] --> RecomendandoDisciplina
+    }
+}
+
+' Transições principais
+Inicial --> SemPlano : Sem plano ativo
+Inicial --> CarregandoTrilha : Plano encontrado
+
+CarregandoTrilha --> ExibindoTrilha : Dados carregados
+
+ExibindoTrilha --> MarcandoConclusao : Marca assunto concluído
+
+MarcandoConclusao --> ExibindoConquista : Salvo com sucesso
+
+ExibindoConquista --> ExibindoTrilha : Retorna
+ExibindoConquista --> DisciplinaConcluida : 100% disciplina
+
+DisciplinaConcluida --> ExibindoTrilha : Continua
+
+SemPlano --> [*] : Cancela
+
+note right of ExibindoTrilha
+    TrailCubit
+    - loadTrail()
+    - markSubjectComplete()
+    - calculateProgress()
+end note
+
+note right of MarcandoConclusao
+    SubjectDatasource
+    - updateSubject()
+end note
+
+note bottom of ExibindoConquista
+    Milestones:
+    - 25% concluído
+    - 50% concluído
+    - 75% concluído
+    - 100% concluído
+end note
+
+@enduml

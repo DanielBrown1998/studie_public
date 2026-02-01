@@ -1,0 +1,200 @@
+@startuml sequence_learning_trail
+!theme cerulean-outline
+
+skinparam sequence {
+    ArrowColor #4F5D75
+    ActorBorderColor #2D3142
+    LifeLineBorderColor #4F5D75
+    ParticipantBorderColor #2D3142
+    ParticipantBackgroundColor #BFC0C0
+}
+
+title UC06 - Diagrama de Sequencia: Visualizar Trilha de Aprendizado
+
+actor Usuario as user
+participant "TrailScreen" as screen
+participant "TrailCubit" as cubit
+participant "DisciplineRepo" as disciplineRepo
+participant "SubjectRepo" as subjectRepo
+database "SQLite" as db
+
+== Carregar Trilha de Aprendizado ==
+
+user -> screen : Acessa trilha
+activate screen
+
+screen -> cubit : loadTrail()
+activate cubit
+
+cubit --> screen : TrailLoading
+screen -> screen : Exibe Skeletonizer
+
+cubit -> disciplineRepo : getAllDisciplines()
+activate disciplineRepo
+
+disciplineRepo -> db : SELECT * FROM disciplines
+activate db
+db --> disciplineRepo : List<DisciplineData>
+deactivate db
+
+disciplineRepo --> cubit : disciplines
+deactivate disciplineRepo
+
+loop Para cada disciplina
+    cubit -> subjectRepo : getSubjectsByDiscipline(disciplineId)
+    activate subjectRepo
+    
+    subjectRepo -> db : SELECT * FROM subjects\nWHERE discipline_id = ?
+    activate db
+    db --> subjectRepo : List<Subject>
+    deactivate db
+    
+    subjectRepo --> cubit : subjects
+    deactivate subjectRepo
+end
+
+cubit -> cubit : calculateProgress()
+note right
+    total = subjects.length
+    completed = subjects.where(isCompleted).length
+    progress = completed / total
+end note
+
+cubit --> screen : TrailLoaded(disciplines, progress)
+deactivate cubit
+
+screen -> screen : Exibe trilha com progresso
+deactivate screen
+
+== Visualizar Disciplina ==
+
+user -> screen : Seleciona disciplina "Matemática"
+activate screen
+
+screen -> cubit : selectDiscipline(disciplineId)
+activate cubit
+
+cubit -> subjectRepo : getSubjectsByDiscipline(disciplineId)
+activate subjectRepo
+subjectRepo -> db : SELECT * FROM subjects
+activate db
+db --> subjectRepo : subjects
+deactivate db
+subjectRepo --> cubit : subjects
+deactivate subjectRepo
+
+cubit --> screen : DisciplineSelected(subjects, progress: 40%)
+deactivate cubit
+
+screen -> screen : Exibe lista de assuntos
+screen --> user : Lista com status (concluído/pendente)
+deactivate screen
+
+== Marcar Assunto como Concluído ==
+
+user -> screen : Marca "Álgebra Linear" como concluído
+activate screen
+
+screen -> cubit : markSubjectComplete(subjectId)
+activate cubit
+
+cubit --> screen : MarkingProgress
+screen -> screen : Exibe indicador de loading
+
+cubit -> subjectRepo : updateSubject(subject.copyWith(isCompleted: true))
+activate subjectRepo
+
+subjectRepo -> db : UPDATE subjects SET is_completed = 1\nWHERE id = ?
+activate db
+db --> subjectRepo : success
+deactivate db
+
+subjectRepo --> cubit : updatedSubject
+deactivate subjectRepo
+
+cubit -> cubit : recalculateProgress()
+
+cubit --> screen : SubjectMarkedComplete(newProgress: 50%)
+deactivate cubit
+
+screen -> screen : Atualiza UI com checkmark
+screen -> screen : Atualiza barra de progresso
+deactivate screen
+
+== Milestone Atingido ==
+
+alt Progresso = 50% (Milestone)
+    screen -> screen : Exibe animação de conquista
+    screen --> user : "Parabéns! Metade da disciplina concluída!"
+end
+
+== Disciplina 100% Concluída ==
+
+user -> screen : Marca último assunto
+activate screen
+
+screen -> cubit : markSubjectComplete(lastSubjectId)
+activate cubit
+
+cubit -> subjectRepo : updateSubject(...)
+activate subjectRepo
+subjectRepo --> cubit : success
+deactivate subjectRepo
+
+cubit -> cubit : recalculateProgress()
+note right : progress = 100%
+
+cubit --> screen : DisciplineCompleted(discipline)
+deactivate cubit
+
+screen -> screen : Exibe celebração especial
+screen --> user : "Disciplina Matemática concluída!"
+
+screen -> screen : Sugere próxima disciplina
+deactivate screen
+
+== Desmarcar Assunto (Fluxo Alternativo) ==
+
+user -> screen : Desmarca assunto concluído
+activate screen
+
+screen -> cubit : markSubjectIncomplete(subjectId)
+activate cubit
+
+cubit -> subjectRepo : updateSubject(subject.copyWith(isCompleted: false))
+activate subjectRepo
+subjectRepo --> cubit : success
+deactivate subjectRepo
+
+cubit -> cubit : recalculateProgress()
+cubit --> screen : SubjectMarkedIncomplete(newProgress: 40%)
+deactivate cubit
+
+screen -> screen : Atualiza UI
+deactivate screen
+
+== Sem Plano de Estudos (Fluxo Alternativo) ==
+
+user -> screen : Acessa trilha
+activate screen
+
+screen -> cubit : loadTrail()
+activate cubit
+
+cubit -> disciplineRepo : getAllDisciplines()
+activate disciplineRepo
+disciplineRepo --> cubit : [] (vazio)
+deactivate disciplineRepo
+
+cubit --> screen : NoStudyPlan
+deactivate cubit
+
+screen -> screen : Exibe mensagem
+screen --> user : "Crie seu plano de estudos para visualizar a trilha"
+
+user -> screen : Clica "Criar Plano"
+screen -> screen : Navega para tela de criação
+
+deactivate screen
+
+@enduml

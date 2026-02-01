@@ -1,0 +1,208 @@
+@startuml sequence_generate_study_plan
+!theme cerulean-outline
+
+skinparam sequence {
+    ArrowColor #4F5D75
+    ActorBorderColor #2D3142
+    LifeLineBorderColor #4F5D75
+    ParticipantBorderColor #2D3142
+    ParticipantBackgroundColor White
+}
+
+title UC02 - Diagrama de Sequência: Gerar Plano de Estudos
+
+actor Estudante as E
+participant "TrailPage" as TP
+participant "StudyPlanCubit" as SPC
+participant "MakeStudyPlanUseCase" as UC
+participant "DisciplineRepository" as DR
+participant "AiRepository" as AIR
+participant "Firebase AI\n(Gemini)" as AI
+participant "SubjectsRepository" as SR
+database "SQLite\n(Drift)" as DB
+
+== Solicitar Geração do Plano ==
+
+E -> TP: Seleciona disciplina
+activate TP
+
+TP -> SPC: generateStudyPlan(disciplineId)
+activate SPC
+
+SPC -> SPC: emit(Loading)
+SPC -> UC: call(idDiscipline)
+activate UC
+
+== Buscar Dados da Disciplina ==
+
+UC -> DR: getDisciplineById(id)
+activate DR
+
+DR -> DB: SELECT FROM disciplines WHERE id = ?
+activate DB
+DB --> DR: Discipline
+deactivate DB
+
+DR --> UC: Discipline
+deactivate DR
+
+== Montar Schema JSON ==
+
+UC -> UC: Criar Schema para Subject
+note right of UC
+    Schema define:
+    - title: String
+    - difficultyLevel: Integer (1-50)
+    - description: String (max 200 chars)
+    - metrics: String
+    - resourceLinks: String
+    - status: Boolean (false)
+end note
+
+== Gerar Prompt para IA ==
+
+UC -> UC: Montar prompt com contexto
+note right of UC
+    Prompt inclui:
+    - Contexto educacional
+    - Regras de geração
+    - Nome da disciplina
+    - Descrição da disciplina
+end note
+
+== Chamar Firebase AI ==
+
+UC -> AIR: generateWithSchema(schema, prompt)
+activate AIR
+
+AIR -> AI: generateContent(prompt)
+activate AI
+
+note over AI
+    Modelo: Gemini 2.5 Pro
+    Formato: JSON
+    Timeout: configurável
+end note
+
+AI --> AIR: Response JSON
+deactivate AI
+
+AIR -> AIR: json.decode(response.text)
+AIR --> UC: Map<String, dynamic>
+deactivate AIR
+
+== Processar Resposta ==
+
+UC -> UC: Validar estrutura JSON
+
+alt JSON válido
+    UC -> UC: Extrair lista de subjects
+    
+    loop Para cada subject no JSON
+        UC -> UC: Criar objeto Subject
+        note right of UC
+            Subject(
+                title: json['title'],
+                difficultyLevel: json['difficultyLevel'],
+                disciplineId: disciplineId,
+                description: json['description'],
+                metrics: json['metrics'],
+                resourceLinks: json['resourceLinks'],
+                status: false
+            )
+        end note
+        
+        UC -> SR: insertSubject(subject)
+        activate SR
+        
+        SR -> DB: INSERT INTO subjects
+        activate DB
+        DB --> SR: id
+        deactivate DB
+        
+        SR --> UC: Subject
+        deactivate SR
+    end
+    
+    UC --> SPC: List<Subject>
+    deactivate UC
+    
+    SPC -> SPC: emit(Success)
+    SPC --> TP: StudyPlanState
+    deactivate SPC
+    
+    TP --> E: Exibe plano de estudos
+    deactivate TP
+
+else JSON inválido
+    UC --> SPC: throw InvalidResponseException
+    deactivate UC
+    
+    SPC -> SPC: emit(Failure)
+    SPC --> TP: StudyPlanFailure
+    deactivate SPC
+    
+    TP --> E: Exibe mensagem de erro
+    deactivate TP
+end
+
+== Tratamento de Erro de Conexão ==
+
+E -> TP: Solicita geração
+activate TP
+
+TP -> SPC: generateStudyPlan(disciplineId)
+activate SPC
+
+SPC -> UC: call(idDiscipline)
+activate UC
+
+UC -> AIR: generateWithSchema(schema, prompt)
+activate AIR
+
+AIR -> AI: generateContent(prompt)
+activate AI
+
+AI --> AIR: Timeout/NetworkError
+deactivate AI
+
+AIR --> UC: throw ConnectionException
+deactivate AIR
+
+UC --> SPC: throw AIException
+deactivate UC
+
+SPC -> SPC: emit(Failure)
+SPC --> TP: StudyPlanFailure
+deactivate SPC
+
+TP --> E: "Erro de conexão.\nTente novamente."
+deactivate TP
+
+== Visualizar Plano Existente ==
+
+E -> TP: Acessa trilha
+activate TP
+
+TP -> SPC: getStudyPlan(disciplineId)
+activate SPC
+
+SPC -> SR: getSubjectsByDiscipline(id)
+activate SR
+
+SR -> DB: SELECT FROM subjects WHERE disciplineId = ?
+activate DB
+DB --> SR: List<Subject>
+deactivate DB
+
+SR --> SPC: List<Subject>
+deactivate SR
+
+SPC -> SPC: emit(Success)
+SPC --> TP: StudyPlanState
+deactivate SPC
+
+TP --> E: Exibe matérias do plano
+deactivate TP
+
+@enduml

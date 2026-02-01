@@ -1,0 +1,94 @@
+@startuml state_manage_disciplines
+!theme cerulean-outline
+
+skinparam state {
+    BackgroundColor White
+    BorderColor #2D3142
+    ArrowColor #4F5D75
+}
+
+title UC01 - Diagrama de Estados: Gerenciar Disciplinas
+
+[*] --> Inicial
+
+state Inicial {
+    [*] --> CarregandoDisciplinas
+    CarregandoDisciplinas : Carregando dados do banco
+    
+    CarregandoDisciplinas --> DisciplinasCarregadas : Sucesso
+    CarregandoDisciplinas --> ErroCarregamento : Falha
+}
+
+state DisciplinasCarregadas {
+    [*] --> VerificandoLista
+    VerificandoLista --> SemDisciplinas : Lista vazia
+    VerificandoLista --> ComDisciplinas : Lista com itens
+    
+    state SemDisciplinas {
+        [*] --> ExibindoCardInformativo
+        ExibindoCardInformativo : Mostra opção para adicionar
+    }
+    
+    state ComDisciplinas {
+        [*] --> ExibindoLista
+        ExibindoLista : Mostra disciplinas cadastradas
+    }
+}
+
+state DialogoAberto {
+    [*] --> CarregandoOpcoes
+    CarregandoOpcoes --> ExibindoOpcoes : Ícones carregados
+    
+    state ExibindoOpcoes {
+        [*] --> Ocioso
+        Ocioso --> SelecionandoDisciplina : Clique em chip
+        SelecionandoDisciplina --> Ocioso : Atualiza seleção
+        
+        Ocioso --> Filtrando : Digita no campo
+        Filtrando --> Ocioso : Atualiza lista
+    }
+}
+
+state SalvandoAlteracoes {
+    [*] --> PersistindoDados
+    PersistindoDados : Salvando no banco
+    
+    PersistindoDados --> SucessoSalvamento : Sucesso
+    PersistindoDados --> ErroSalvamento : Falha
+}
+
+state ErroCarregamento {
+    [*] --> ExibindoMensagemErro
+    ExibindoMensagemErro : Mostra erro ao usuário
+}
+
+state ErroSalvamento {
+    [*] --> ExibindoErroSalvamento
+    ExibindoErroSalvamento : Mantém estado anterior
+}
+
+' Transições
+DisciplinasCarregadas --> DialogoAberto : Clique em adicionar
+DialogoAberto --> DisciplinasCarregadas : Cancela
+DialogoAberto --> SalvandoAlteracoes : Confirma seleção
+SalvandoAlteracoes --> DisciplinasCarregadas : Sucesso
+ErroCarregamento --> Inicial : Tentar novamente
+ErroSalvamento --> DialogoAberto : Tentar novamente
+SucessoSalvamento --> DisciplinasCarregadas : Atualiza lista
+
+DisciplinasCarregadas --> [*]
+
+note right of DialogoAberto
+    AddDisciplineDialog
+    - Chips selecionáveis
+    - Campo de busca
+    - Lista pré-cadastrada
+end note
+
+note right of SalvandoAlteracoes
+    DisciplineCubit
+    - addDisciplines()
+    - getDisciplines()
+end note
+
+@enduml

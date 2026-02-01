@@ -1,0 +1,187 @@
+@startuml sequence_manage_disciplines
+!theme cerulean-outline
+
+skinparam sequence {
+    ArrowColor #4F5D75
+    ActorBorderColor #2D3142
+    LifeLineBorderColor #4F5D75
+    ParticipantBorderColor #2D3142
+    ParticipantBackgroundColor White
+}
+
+title UC01 - Diagrama de Sequência: Gerenciar Disciplinas
+
+actor Estudante as E
+participant "HomePage" as HP
+participant "AddDisciplineDialog" as ADD
+participant "DisciplineCubit" as DC
+participant "DefineDisciplineToStudyUsecase" as UC
+participant "DisciplineRepository" as DR
+database "SQLite\n(Drift)" as DB
+
+== Carregar Disciplinas (Inicialização) ==
+
+E -> HP: Acessa Home
+activate HP
+
+HP -> DC: getDisciplines()
+activate DC
+
+DC -> DC: emit(DisciplineLoading)
+DC -> DR: getAllDisciplines()
+activate DR
+
+DR -> DB: SELECT disciplines
+activate DB
+DB --> DR: List<Discipline>
+deactivate DB
+
+DR --> DC: List<DisciplineData>
+deactivate DR
+
+alt Lista vazia
+    DC -> DC: emit(DisciplineEmpty)
+else Lista com dados
+    DC -> DC: emit(DisciplineSuccess)
+end
+
+DC --> HP: DisciplineState
+deactivate DC
+
+HP --> E: Exibe disciplinas
+deactivate HP
+
+== Adicionar Disciplinas ==
+
+E -> HP: Clica em "Adicionar"
+activate HP
+
+HP -> ADD: showDialog()
+activate ADD
+
+ADD -> ADD: Carrega lista pré-cadastrada
+ADD --> E: Exibe diálogo com opções
+
+E -> ADD: Seleciona disciplinas
+ADD -> ADD: Atualiza disciplinesSelected
+
+E -> ADD: Confirma seleção
+ADD -> DC: addDisciplines(List<Discipline>)
+activate DC
+
+DC -> DC: emit(DisciplineLoading)
+DC -> UC: call(disciplines)
+activate UC
+
+loop Para cada disciplina
+    UC -> DR: insertDiscipline(discipline)
+    activate DR
+    DR -> DB: INSERT INTO disciplines
+    activate DB
+    DB --> DR: id
+    deactivate DB
+    DR --> UC: Discipline
+    deactivate DR
+end
+
+UC --> DC: void
+deactivate UC
+
+DC -> DR: getAllDisciplines()
+activate DR
+DR -> DB: SELECT disciplines
+activate DB
+DB --> DR: List<Discipline>
+deactivate DB
+DR --> DC: List<DisciplineData>
+deactivate DR
+
+DC -> DC: emit(DisciplineSuccess)
+DC --> ADD: DisciplineState
+deactivate DC
+
+ADD --> HP: Fecha diálogo
+deactivate ADD
+
+HP --> E: Atualiza lista
+deactivate HP
+
+== Remover Disciplina ==
+
+E -> HP: Clica em "Adicionar"
+activate HP
+
+HP -> ADD: showDialog()
+activate ADD
+
+ADD --> E: Exibe diálogo\n(disciplinas pré-selecionadas)
+
+E -> ADD: Desmarca disciplina existente
+ADD -> ADD: Remove de disciplinesSelected
+
+E -> ADD: Confirma seleção
+ADD -> DC: addDisciplines(List<Discipline>)
+activate DC
+
+note over DC
+    O UseCase compara a lista atual
+    com a nova lista e identifica
+    quais disciplinas remover
+end note
+
+DC -> UC: call(disciplines)
+activate UC
+
+UC -> DR: deleteDiscipline(id)
+activate DR
+DR -> DB: DELETE FROM disciplines
+activate DB
+DB --> DR: void
+deactivate DB
+DR --> UC: void
+deactivate DR
+
+UC --> DC: void
+deactivate UC
+
+DC -> DC: emit(DisciplineSuccess)
+DC --> ADD: DisciplineState
+deactivate DC
+
+ADD --> HP: Fecha diálogo
+deactivate ADD
+
+HP --> E: Atualiza lista
+deactivate HP
+
+== Tratamento de Erro ==
+
+E -> ADD: Confirma seleção
+activate ADD
+
+ADD -> DC: addDisciplines(List<Discipline>)
+activate DC
+
+DC -> UC: call(disciplines)
+activate UC
+
+UC -> DR: insertDiscipline(discipline)
+activate DR
+DR -> DB: INSERT (com erro)
+activate DB
+DB --> DR: Exception
+deactivate DB
+DR --> UC: throw DatabaseException
+deactivate DR
+
+UC --> DC: throw InsertDisciplineException
+deactivate UC
+
+DC -> DC: emit(DisciplineFailure)
+DC --> ADD: DisciplineFailure
+deactivate DC
+
+ADD --> E: Exibe mensagem de erro
+deactivate ADD
+
+@enduml

@@ -1,0 +1,142 @@
+@startuml state_timer
+!theme cerulean-outline
+
+skinparam state {
+    BackgroundColor White
+    BorderColor #2D3142
+    ArrowColor #4F5D75
+}
+
+title UC05 - Diagrama de Estados: Utilizar Temporizador de Estudo
+
+[*] --> Inicial
+
+state Inicial {
+    [*] --> Configurando
+    Configurando : Definir tempo de estudo
+}
+
+state Configurando {
+    [*] --> SelecionandoTempo
+    SelecionandoTempo : Usuário escolhe duração
+    
+    SelecionandoTempo --> ModoLivre : Tempo customizado
+    SelecionandoTempo --> ModoPomodoro : Técnica Pomodoro
+    
+    state ModoLivre {
+        [*] --> TempoDefinido
+        TempoDefinido : Ex: 45 minutos
+    }
+    
+    state ModoPomodoro {
+        [*] --> CicloPomodoro
+        CicloPomodoro : 25min estudo + 5min pausa
+    }
+}
+
+state EmExecucao {
+    [*] --> Contando
+    Contando : Timer ativo
+    
+    state Contando {
+        [*] --> DecrementandoTempo
+        DecrementandoTempo : -1 segundo
+    }
+    
+    Contando --> TempoZerado : Tempo = 0
+    Contando --> Pausado : Clica pausar
+}
+
+state Pausado {
+    [*] --> AguardandoAcao
+    AguardandoAcao : Timer pausado
+    
+    AguardandoAcao --> Retomando : Clica retomar
+    AguardandoAcao --> Cancelando : Clica cancelar
+    
+    state Retomando {
+        [*] --> RestaurandoTimer
+    }
+    
+    state Cancelando {
+        [*] --> ConfirmandoCancelamento
+    }
+}
+
+state TempoZerado {
+    [*] --> NotificandoUsuario
+    NotificandoUsuario : Som/Vibração/Notificação
+    
+    NotificandoUsuario --> RegistrandoSessao
+    
+    state RegistrandoSessao {
+        [*] --> SalvandoEstatisticas
+        SalvandoEstatisticas : Tempo estudado
+    }
+}
+
+state SessaoFinalizada {
+    [*] --> ExibindoResumo
+    ExibindoResumo : Mostra tempo estudado
+    
+    ExibindoResumo --> OferecendoOpcoes
+    
+    state OferecendoOpcoes {
+        [*] --> AguardandoDecisao
+    }
+}
+
+state CicloPomodoroCompleto {
+    [*] --> VerificandoCiclo
+    VerificandoCiclo --> IniciarPausa : Fim de estudo
+    VerificandoCiclo --> IniciarEstudo : Fim de pausa
+    
+    state IniciarPausa {
+        [*] --> ConfigurandoPausa
+        ConfigurandoPausa : 5 ou 15 minutos
+    }
+    
+    state IniciarEstudo {
+        [*] --> ConfigurandoEstudo
+        ConfigurandoEstudo : 25 minutos
+    }
+}
+
+' Transições principais
+Configurando --> EmExecucao : Inicia timer
+EmExecucao --> Pausado : Pausa
+Pausado --> EmExecucao : Retoma
+EmExecucao --> TempoZerado : Termina
+TempoZerado --> SessaoFinalizada : Registra
+SessaoFinalizada --> Configurando : Nova sessão
+
+' Pomodoro
+TempoZerado --> CicloPomodoroCompleto : Modo Pomodoro
+CicloPomodoroCompleto --> EmExecucao : Próximo ciclo
+
+' Cancelamento
+Pausado --> Configurando : Confirma cancelamento
+
+SessaoFinalizada --> [*]
+
+note right of EmExecucao
+    TimerCubit
+    - startTimer()
+    - pauseTimer()
+    - stopTimer()
+end note
+
+note right of TempoZerado
+    Notificação local
+    - Som de alarme
+    - Vibração
+end note
+
+note bottom of ModoPomodoro
+    Técnica Pomodoro:
+    - 25min trabalho
+    - 5min pausa curta
+    - 15min pausa longa (a cada 4 ciclos)
+end note
+
+@enduml
