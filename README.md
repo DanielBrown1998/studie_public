@@ -1,6 +1,14 @@
 # Studie App
 
-Um aplicativo pensado para estudantes, com o objetivo de os ajudar nos seus estudos.
+<p align="center">
+  <img src="logo.jpeg" alt="Studie Logo" width="200"/>
+</p>
+
+<p align="center">
+  <strong>Um aplicativo pensado para estudantes, com o objetivo de os ajudar nos seus estudos.</strong>
+</p>
+
+---
 
 ## 🛠️ Tecnologias
 
